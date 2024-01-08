@@ -32,109 +32,123 @@
 <nav class="navigation" data-ice="nav"><div>
   <ul>
     
-  <li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/Agent.js~Agent.html">Agent</a></span></span></li>
-<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/BeatTracking.js~BeatTracking.html">BeatTracking</a></span></span></li>
-<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/FFT.js~FFT.html">FFT</a></span></span></li>
-<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/MusicTempo.js~MusicTempo.html">MusicTempo</a></span></span></li>
-<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/OnsetDetection.js~OnsetDetection.html">OnsetDetection</a></span></span></li>
-<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/TempoInduction.js~TempoInduction.html">TempoInduction</a></span></span></li>
-</ul>
+  </ul>
 </div>
 </nav>
 
 <div class="content" data-ice="content"><div data-ice="index" class="github-markdown"><h2 id="description">Description</h2>
-<p>Javascript-library for finding out tempo (BPM) of a song and beat tracking. It uses an algorithm <a href="http://www.eecs.qmul.ac.uk/~simond/pub/2001/jnmr.pdf">&quot;Beatroot&quot;</a> authored by <a href="http://www.eecs.qmul.ac.uk/~simond/">Simon Dixon</a></p>
+<p>Typescript library for finding out tempo (BPM) of a song and beat tracking. It uses an algorithm <a href="http://www.eecs.qmul.ac.uk/~simond/pub/2001/jnmr.pdf">&quot;Beatroot&quot;</a> authored by <a href="http://www.eecs.qmul.ac.uk/~simond/">Simon Dixon</a></p>
 <p><strong><a href="https://killercrush.github.io/music-tempo/example/example-advanced.html">Example App</a></strong></p>
 <p><strong><a href="https://killercrush.github.io/music-tempo/docs/index.html">Docs</a></strong></p>
 <h2 id="instalation">Instalation</h2>
+<p>Using npm:</p>
+<pre><code class="lang-sh"><code class="source-code prettyprint">npm i music-tempo</code>
+</code></pre>
 <p>In a browser</p>
 <pre><code class="lang-html"><code class="source-code prettyprint">&lt;script src=&quot;music-tempo.min.js&quot;&gt;&lt;/script&gt;</code>
 </code></pre>
-<p>Using npm:</p>
-<pre><code class="lang-shell"><code class="source-code prettyprint">$ npm i --save music-tempo</code>
-</code></pre>
 <h2 id="usage">Usage</h2>
 <p>Pass to the constructor MusicTempo the buffer that contains data in the following format: non-interleaved IEEE754 32-bit linear PCM with a nominal range between -1 and +1, that is, 32bits floating point buffer, with each samples between -1.0 and 1.0. This format is used in the <a href="https://developer.mozilla.org/en/docs/Web/API/AudioBuffer">AudioBuffer</a> interface of <a href="https://developer.mozilla.org/en/docs/Web/API/Web_Audio_API">Web Audio API</a>. The object returned by the constructor contain properties <code>tempo</code> - tempo value in beats per minute and <code>beats</code> - array with beat times in seconds.</p>
-<h3 id="browser">Browser</h3>
-<pre><code class="lang-javascript"><code class="source-code prettyprint">var context = new AudioContext();
-var fileInput = document.getElementById(&quot;fileInput&quot;);
+<h3 id="react-js">React.js</h3>
+<pre><code class="lang-javascript"><code class="source-code prettyprint">import { useRef, useEffect } from &quot;react&quot;;
+import { extractTempo } from &quot;music-tempo&quot;;
 
-fileInput.onchange = function () {
-  var files = fileInput.files;
-
-  if (files.length == 0) return;
-  var reader = new FileReader();
-
-  reader.onload = function(fileEvent) {
-    context.decodeAudioData(fileEvent.target.result, calcTempo);
-  }
-
-  reader.readAsArrayBuffer(files[0]);
-}
-var calcTempo = function (buffer) {
-  var audioData = [];
+const context = new AudioContext({ sampleRate: 44100 });
+const calcTempo = function (buffer) {
+  let audioData = [];
   // Take the average of the two channels
   if (buffer.numberOfChannels == 2) {
-    var channel1Data = buffer.getChannelData(0);
-    var channel2Data = buffer.getChannelData(1);
-    var length = channel1Data.length;
-    for (var i = 0; i &lt; length; i++) {
+    const channel1Data = buffer.getChannelData(0);
+    const channel2Data = buffer.getChannelData(1);
+    const length = channel1Data.length;
+    for (let i = 0; i &lt; length; i++) {
       audioData[i] = (channel1Data[i] + channel2Data[i]) / 2;
     }
   } else {
     audioData = buffer.getChannelData(0);
   }
-  var mt = new MusicTempo(audioData);
+  const mt = extractTempo(audioData);
 
   console.log(mt.tempo);
   console.log(mt.beats);
-}</code>
+};
+
+const GetBPM = () =&gt; {
+  const ref = useRef(null);
+
+  useEffect(() =&gt; {
+    ref.current.onchange = function () {
+      const files = ref.current.files;
+
+      if (files.length == 0) return;
+
+      const reader = new FileReader();
+
+      reader.onload = function (fileEvent) {
+        context.decodeAudioData(fileEvent.target.result, calcTempo);
+      };
+
+      reader.readAsArrayBuffer(files[0]);
+    };
+  }, []);
+
+  return &lt;input ref={ref} type=&quot;file&quot; accept=&quot;audio/*&quot; /&gt;;
+};</code>
 </code></pre>
 <h3 id="node-js">Node.js</h3>
 <p>In Node.js environment can be used <a href="https://github.com/sebpiq/node-web-audio-api">node-web-audio-api library</a></p>
-<pre><code class="lang-javascript"><code class="source-code prettyprint">var AudioContext = require(&quot;web-audio-api&quot;).AudioContext;
-var MusicTempo = require(&quot;music-tempo&quot;);
-var fs = require(&quot;fs&quot;);
+<pre><code class="lang-javascript"><code class="source-code prettyprint">const AudioContext = require(&quot;web-audio-api&quot;).AudioContext;
+const MusicTempo = require(&quot;music-tempo&quot;);
+const fs = require(&quot;fs&quot;);
 
-var calcTempo = function (buffer) {
-  var audioData = [];
+const calcTempo = function (buffer) {
+  let audioData = [];
   // Take the average of the two channels
   if (buffer.numberOfChannels == 2) {
-    var channel1Data = buffer.getChannelData(0);
-    var channel2Data = buffer.getChannelData(1);
-    var length = channel1Data.length;
-    for (var i = 0; i &lt; length; i++) {
+    const channel1Data = buffer.getChannelData(0);
+    const channel2Data = buffer.getChannelData(1);
+    const length = channel1Data.length;
+    for (let i = 0; i &lt; length; i++) {
       audioData[i] = (channel1Data[i] + channel2Data[i]) / 2;
     }
   } else {
     audioData = buffer.getChannelData(0);
   }
-  var mt = new MusicTempo(audioData);
+  const mt = extractTempo(audioData);
 
   console.log(mt.tempo);
   console.log(mt.beats);
-}
+};
 
-var data = fs.readFileSync(&quot;songname.mp3&quot;);
+const data = fs.readFileSync(&quot;songname.mp3&quot;);
 
-var context = new AudioContext();
+const context = new AudioContext();
 context.decodeAudioData(data, calcTempo);</code>
 </code></pre>
+<h2 id="optional-parameters">Optional parameters</h2>
+<p>You can pass object with parameters as second argument to the constructor:</p>
+<pre><code class="lang-javascript"><code class="source-code prettyprint">const result = extractTempo(audioData, {
+  expiryTime: 30,
+  maxBeatInterval: 1.5,
+});</code>
+</code></pre>
+<p>Most useful are <code>maxBeatInterval</code>/<code>minBeatInterval</code> and <code>expiryTime</code>. First two used for setting up maximum and minimum BPM. Default value for <code>maxBeatInterval</code> is 1 which means that minimum BPM is 60 (60 / 1 = 60). Default value for <code>minBeatInterval</code> is 0.3 which means that maximum BPM is 200 (60 / 0.3 = 200). Be careful, the more value of maximum BPM, the more probability of 2x-BPM errors (e.g. if max BPM = 210 and real tempo of a song 102 BPM, in the end you can get 204 BPM).
+<code>expiryTime</code> can be used if audio file have periods of silence or almost silence and because of that beat tracking is failing.
+Other parameters are listed in <a href="https://killercrush.github.io/music-tempo/docs/class/src/MusicTempo.js~MusicTempo.html">documentation</a>.</p>
 <h2 id="other">Other</h2>
+<h3 id="dependencies">Dependencies</h3>
+<p>dependencies can be found on the <code>package.json</code> file and they can be installed using <code>npm install</code> or your favorite package manager.</p>
 <h3 id="tests">Tests</h3>
-<p>Requires <a href="https://www.npmjs.com/package/mocha">mocha</a> and <a href="https://www.npmjs.com/package/chai">chai</a></p>
-<pre><code class="lang-shell"><code class="source-code prettyprint">$ npm test</code>
+<pre><code class="lang-shell"><code class="source-code prettyprint">npm test</code>
 </code></pre>
 <h3 id="documentation">Documentation</h3>
-<p>Requires <a href="https://www.npmjs.com/package/esdoc">esdoc</a></p>
-<pre><code class="lang-shell"><code class="source-code prettyprint">$ esdoc</code>
+<pre><code class="lang-shell"><code class="source-code prettyprint">npm run docs</code>
 </code></pre>
 <h3 id="build">Build</h3>
-<p>Requires <a href="https://www.npmjs.com/package/gulp">gulp</a> and <a href="https://www.npmjs.com/package/gulp-babel">babel</a>. Other dependencies can be found in <code>package.json</code></p>
-<pre><code class="lang-shell"><code class="source-code prettyprint">$ gulp build</code>
+<pre><code class="lang-shell"><code class="source-code prettyprint">npm run build</code>
 </code></pre>
 <h2 id="license">License</h2>
-<p><a href="LICENSE">MIT License</a></p>
+<p><a href="LICENCE">MIT License</a></p>
 </div>
 </div>
 
