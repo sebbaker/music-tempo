@@ -28,10 +28,6 @@
     "example": "example",
     "test": "test"
   },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/killercrush/music-tempo.git"
-  },
   "keywords": [
     "music",
     "tempo",
@@ -39,9 +35,5 @@
     "rhythm",
     "beat",
     "beatroot"
-  ],
-  "bugs": {
-    "url": "https://github.com/killercrush/music-tempo/issues"
-  },
-  "homepage": "https://github.com/killercrush/music-tempo#readme"
+  ]
 }
