@@ -36,7 +36,7 @@
     "beat",
     "beatroot"
   ],  "publishConfig": {
-    "registry": "https://npm.pkg.github.com",
+    "registry": "https://registry.npmjs.org",
     "access": "public"
   }
 }
