@@ -1,5 +1,5 @@
 {
-  "name": "@sebbaker/music-tempo",
+  "name": "@sebastbake/music-tempo",
   "version": "1.0.3",
   "description": "Finding out tempo of the music",
   "main": "./dist/node/MusicTempo.js",
@@ -35,8 +35,5 @@
     "rhythm",
     "beat",
     "beatroot"
-  ],
-   "publishConfig": {
-    "registry": "https://npm.pkg.github.com"
-  }
+  ]
 }
